@@ -1,58 +1,111 @@
 package com.afeng;
 
+
+import com.afeng.util.JsonUtils;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 public class MyBatisTester {
+    // 参数示例：{\"host\":\"192.168.0.12\",\"port\":\"54322\",\"db\":\"test-db\",\"username\":\"system\",\"password\":\"123456\",\"xmlFilePath\":\"C:\\Users\\imche\\Desktop\\work\\weizhou\\code\\ModuBoot\\BladeBoot300\\src\\main\\resources\\org\\springblade\\drp\\mapper\\PipelineFloodPreventionMapper.xml\",\"namespace\":\"org.springblade.drp.mapper.PipelineFloodPreventionMapper\",\"sqlIds\":[\"selectPipelineFloodPreventionPage\",\"selectDetailById\",\"selectStatusStatistics\",\"selectExceptionTypeStatistics\"],\"sqlParams\":{}}
     public static void main(String[] args) {
-        // 接收Python传入的参数：XML文件路径、数据库配置、SQL ID列表
-        String xmlFilePath = args[0];
-        String host = args[1];
-        String port = args[2];
-        String db = args[3];
-        String user = args[4];
-        String password = args[5];
-        String[] sqlIds = args[6].split(","); // 要测试的SQL ID，用逗号分隔
-
         try {
-            // 加载MyBatis配置，替换占位符
-            InputStream configStream = MyBatisTester.class.getClassLoader().getResourceAsStream("mybatis-config.xml");
-            Properties props = new Properties();
-            props.setProperty("host", host);
-            props.setProperty("port", port);
-            props.setProperty("db", db);
-            props.setProperty("user", user);
-            props.setProperty("password", password);
-            props.setProperty("xmlFilePath", xmlFilePath);
+            // 解析Python传入的参数（JSON格式）
+            if (args.length == 0) {
+                System.err.println("参数错误：需传入JSON格式的配置参数");
+                return;
+            }
+            String jsonParams = args[0];
+            JSONObject params = JsonUtils.parseParams(jsonParams);
 
-            SqlSessionFactory factory = new SqlSessionFactoryBuilder().build(configStream, props);
+            // 提取数据库配置
+            String host = params.getString("host");
+            String port = params.getString("port");
+            String db = params.getString("db");
+            String username = params.getString("username");
+            String password = params.getString("password");
+            String xmlFilePath = params.getString("xmlFilePath");
+            JSONObject sqlParams = params.getJSONObject("sqlParams"); // SQL执行所需参数
+
+            // 加载MyBatis配置模板并替换占位符
+            String configTemplate = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "<!DOCTYPE configuration PUBLIC \"-//mybatis.org//DTD Config 3.0//EN\" \"http://mybatis.org/dtd/mybatis-3-config.dtd\">\n" +
+                    "<configuration>\n" +
+                    "    <environments default=\"development\">\n" +
+                    "        <environment id=\"development\">\n" +
+                    "            <transactionManager type=\"JDBC\"/>\n" +
+                    "            <dataSource type=\"POOLED\">\n" +
+                    "                <property name=\"driver\" value=\"com.kingbase8.Driver\"/>\n" +
+                    "                <property name=\"url\" value=\"jdbc:kingbase8://${host}:${port}/${db}\"/>\n" +
+                    "                <property name=\"username\" value=\"${username}\"/>\n" +
+                    "                <property name=\"password\" value=\"${password}\"/>\n" +
+                    "            </dataSource>\n" +
+                    "        </environment>\n" +
+                    "    </environments>\n" +
+                    "    <mappers>\n" +
+                    "        <mapper url=\"file:///${xmlFilePath}\"/>\n" +
+                    "    </mappers>\n" +
+                    "</configuration>";
+
+            // 替换模板中的占位符
+            String configContent = configTemplate
+                    .replace("${host}", host)
+                    .replace("${port}", port)
+                    .replace("${db}", db)
+                    .replace("${username}", username)
+                    .replace("${password}", password)
+                    .replace("${xmlFilePath}", xmlFilePath);
+
+            // 创建MyBatis会话
+            InputStream configStream = new ByteArrayInputStream(configContent.getBytes(StandardCharsets.UTF_8));
+            SqlSessionFactory factory = new SqlSessionFactoryBuilder().build(configStream);
             SqlSession session = factory.openSession();
 
-            // 执行每个SQL ID（假设参数为动态构造的测试数据）
-            for (String sqlId : sqlIds) {
-                try {
-                    // 根据SQL类型构造参数（示例：查询用空参数，增删改用测试数据）
-                    Map<String, Object> params = new HashMap<>();
-                    // 可根据SQL ID动态添加参数，例如：
-                    // if (sqlId.equals("insertUser")) params.put("id", 123);
+            // 执行XML中的所有SQL（通过namespace+id定位）
+            Map<String, Object> resultMap = new HashMap<>();
+            String namespace = params.getString("namespace"); // MyBatis XML的namespace
 
-                    Object result = session.selectOne(sqlId, params); // 或insert/update/delete
-                    System.out.println("SUCCESS:" + sqlId); // 输出成功标识
+            // 遍历所有需要测试的SQL ID
+            for (String sqlId : params.getJSONArray("sqlIds").toJavaList(String.class)) {
+                String fullSqlId = namespace + "." + sqlId; // 完整ID：namespace.id
+                try {
+                    // 执行SQL（根据类型自动选择方法）
+                    Object result;
+                    if (sqlId.startsWith("select")) {
+                        result = session.selectOne(fullSqlId, sqlParams);
+                    } else if (sqlId.startsWith("insert")) {
+                        result = session.insert(fullSqlId, sqlParams);
+                    } else if (sqlId.startsWith("update")) {
+                        result = session.update(fullSqlId, sqlParams);
+                    } else if (sqlId.startsWith("delete")) {
+                        result = session.delete(fullSqlId, sqlParams);
+                    } else {
+                        result = "未知SQL类型";
+                    }
+                    resultMap.put(sqlId, "SUCCESS: " + result);
                 } catch (Exception e) {
-                    System.err.println("FAILED:" + sqlId + "|" + e.getMessage()); // 输出失败信息
+                    resultMap.put(sqlId, "FAILED: " + e.getMessage());
                 }
             }
 
-            session.rollback(); // 测试环境不提交事务，避免脏数据
+            // 测试环境不提交事务，直接回滚
+            session.rollback();
             session.close();
+
+            // 输出结果（JSON格式，便于Python解析）
+            System.out.println(JSONObject.toJSONString(resultMap));
+
         } catch (Exception e) {
-            System.err.println("ERROR:" + e.getMessage());
+            // 输出错误信息
+            System.err.println("测试失败：" + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

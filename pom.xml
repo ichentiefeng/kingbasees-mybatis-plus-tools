@@ -30,6 +30,12 @@
             <artifactId>kingbase8</artifactId>
             <version>9.0.0</version>
         </dependency>
+        <!-- JSON解析（处理Python传入的参数） -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>2.0.43</version>
+        </dependency>
         <!-- 日志（可选） -->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -54,6 +60,30 @@
                         <configuration>
                             <outputDirectory>${project.build.directory}/dependency</outputDirectory>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- 打包为可执行JAR -->
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.afeng.MyBatisTester</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
