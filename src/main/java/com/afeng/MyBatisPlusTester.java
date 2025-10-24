@@ -8,19 +8,35 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 import java.lang.reflect.Method;
+import java.util.Base64;
 
 public class MyBatisPlusTester {
     public static void main(String[] args) {
         ExecutionResult result = new ExecutionResult();
         try {
-            // 1. 解析输入参数（JSON格式）
+            // 1. 解析输入参数（JSON格式或Base64编码的JSON格式）
             if (args.length == 0) {
                 result.setSuccess(false);
                 result.setMessage("请传入JSON格式的参数");
                 System.out.println(JSON.toJSONString(result));
                 return;
             }
-            InputParams input = JSON.parseObject(args[0], InputParams.class);
+            
+            String inputParam = args[0];
+            String jsonString;
+            
+            // 检查参数是否为Base64编码
+            if (isBase64Encoded(inputParam)) {
+                // 解码Base64参数
+                byte[] decodedBytes = Base64.getDecoder().decode(inputParam);
+                jsonString = new String(decodedBytes);
+            } else {
+                // 直接使用参数作为JSON字符串
+                jsonString = inputParam;
+            }
+            
+            System.out.println("参数：" + jsonString);
+            InputParams input = JSON.parseObject(jsonString, InputParams.class);
 
             // 2. 初始化MyBatis-Plus并获取SqlSessionFactory
             SqlSessionFactory factory = MyBatisPlusConfig.createSqlSessionFactory(input);
@@ -77,5 +93,15 @@ public class MyBatisPlusTester {
         }
         // 简单处理：若参数为JSON对象，转换为Map或实体类（此处简化为直接传参）
         return new Object[]{params};
+    }
+    
+    // 简单检查字符串是否为Base64编码
+    private static boolean isBase64Encoded(String str) {
+        try {
+            Base64.getDecoder().decode(str);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }

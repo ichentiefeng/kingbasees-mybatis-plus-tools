@@ -170,13 +170,13 @@ public class MyBatisPlusConfig {
             byte[] classBytes = cw.toByteArray();
 
             // 调试：保存字节码文件（可选）
-            try {
-                String outputPath = System.getProperty("user.dir") + "/target/" + namespace.replace('.', '_') + ".class";
-                Files.write(Paths.get(outputPath), classBytes);
-                System.out.println("字节码文件已保存: " + outputPath);
-            } catch (IOException e) {
-                System.err.println("保存字节码文件失败: " + e.getMessage());
-            }
+//            try {
+//                String outputPath = System.getProperty("user.dir") + "/target/" + namespace.replace('.', '_') + ".class";
+//                Files.write(Paths.get(outputPath), classBytes);
+//                System.out.println("字节码文件已保存: " + outputPath);
+//            } catch (IOException e) {
+//                System.err.println("保存字节码文件失败: " + e.getMessage());
+//            }
 
             // 5. 使用安全的类加载方式
             ClassLoader customLoader = new ClassLoader(Thread.currentThread().getContextClassLoader()) {
