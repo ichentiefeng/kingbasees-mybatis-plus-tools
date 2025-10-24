@@ -35,9 +35,17 @@
    ```
    或者使用jar包执行：
     ```bash
-   java -jar D:\workspace\workspace\dbapi-learn\kingbasees-mybatis-plus-tools\target\kingbasees-mybatis-plus-tools-1.0-SNAPSHOT-jar-with-dependencies.jar java -jar D:\workspace\workspace\dbapi-learn\kingbasees-mybatis-plus-tools\target\kingbasees-mybatis-plus-tools-1.0-SNAPSHOT-jar-with-dependencies.jar '{"host": null, "port": null, "db": null, "username": null, "password": null, "xmlFilePath": "C:\\Users\\imche\\Desktop\\work\\weizhou\\code\\ModuBoot\\BladeBoot300\\src\\main\\resources\\org\\springblade\\drp\\mapper\\PipelineFloodPreventionMapper.xml", "namespace": "org.springblade.drp.mapper.PipelineFloodPreventionMapper", "sqlIds": ["selectPipelineFloodPreventionPage", "selectDetailById", "selectStatusStatistics", "selectExceptionTypeStatistics"], "sqlParams": {}}'
+   java -jar D:\workspace\workspace\dbapi-learn\kingbasees-mybatis-plus-tools\target\kingbasees-mybatis-plus-tools-1.0-SNAPSHOT-jar-with-dependencies.jar java -jar D:\workspace\workspace\dbapi-learn\kingbasees-mybatis-plus-tools\target\kingbasees-mybatis-plus-tools-1.0-SNAPSHOT-jar-with-dependencies.jar '{\"host\":\"192.168.0.12\",\"port\":\"54322\",\"db\":\"test-db\",\"username\":\"system\",\"password\":\"123456\",\"xmlFilePath\":\"C:\\Users\\imche\\Desktop\\work\\weizhou\\code\\ModuBoot\\BladeBoot300\\src\\main\\resources\\org\\springblade\\drp\\mapper\\PipelineFloodPreventionMapper.xml\",\"namespace\":\"org.springblade.drp.mapper.PipelineFloodPreventionMapper\",\"sqlIds\":[\"selectPipelineFloodPreventionPage\",\"selectDetailById\",\"selectStatusStatistics\",\"selectExceptionTypeStatistics\"],\"sqlParams\":{}}'
     ```
-5. 
+5. 测试示例：
+```bash
+java -jar target/kingbasees-mybatis-plus-tools-1.0-SNAPSHOT-jar-with-dependencies.jar '{\"host\":\"192.168.0.12\",\"port\":\"54322\",\"db\":\"wz_mengde_product\",\"username\":\"system\",\"password\":\"szjq1234!\",\"xmlFilePath\":\"C:\\Users\\imche\\Desktop\\work\\weizhou\\code\\ModuBoot\\BladeBoot300\\src\\main\\resources\\org\\springblade\\drp\\mapper\\PipelineFloodPreventionMapper.xml\",\"namespace\":\"org.springblade.drp.mapper.PipelineFloodPreventionMapper\",\"sqlId\":\"selectStatusStatistics\",\"sqlParams\":{}}' 
+```
+6. 测试DBAPI
+```bash
+java -cp .\target\kingbasees-mybatis-plus-tools-1.0-SNAPSHOT-jar-with-dependencies.jar com.afeng.DbapiSqlTester '{\"host\":\"192.168.0.12\",\"port\":\"54322\",\"db\":\"wz_mengde_product\",\"username\":\"system\",\"password\":\"szjq1234!\",\"sql\":\"select\tversion();\",\"sqlParams\":{}}' 
+```
+7. 
 
 #### 依赖管理
 项目的依赖已通过 Maven 管理，具体依赖见 `pom.xml` 文件。

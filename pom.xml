@@ -15,15 +15,32 @@
     </properties>
 
     <dependencies>
+<!--        db-api测试开始-->
+        <dependency>
+            <groupId>io.github.freakchick</groupId>
+            <artifactId>orange</artifactId>
+            <version>1.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.15</version>
+        </dependency>
+<!--        dbAPI测试结束-->
+
+
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>9.8</version>
+        </dependency>
+
+
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
             <version>3.4.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mybatis</groupId>
-            <artifactId>mybatis</artifactId>
-            <version>3.5.6</version>
         </dependency>
         <dependency>
             <groupId>cn.com.kingbase</groupId>
@@ -41,6 +58,12 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.36</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.38</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
@@ -73,7 +96,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>com.afeng.MyBatisTester</mainClass>
+                            <mainClass>com.afeng.MyBatisPlusTester</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
