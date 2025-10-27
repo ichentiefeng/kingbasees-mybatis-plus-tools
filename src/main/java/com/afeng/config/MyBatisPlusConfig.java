@@ -136,17 +136,8 @@ public class MyBatisPlusConfig {
                     // 根据SQL类型和方法名特征判断返回类型
                     String returnType;
                     if ("select".equals(sqlType)) {
-                        // 根据方法名特征判断是否返回列表
-                        if (methodName.contains("List") || methodName.contains("list") || 
-                            methodName.contains("Page") || methodName.contains("page") ||
-                            methodName.contains("All") || methodName.contains("all") ||
-                            methodName.contains("Statistics") || methodName.contains("Stats")) {
-                            // 返回列表类型
-                            returnType = "Ljava/util/List;";
-                        } else {
-                            // 默认返回单个对象
-                            returnType = "Ljava/lang/Object;";
-                        }
+                        // 所有select方法都返回列表类型，避免TooManyResultsException异常
+                        returnType = "Ljava/util/List;";
                     } else {
                         // insert/update/delete 通常返回受影响的行数（int）
                         returnType = "Ljava/lang/Integer;";

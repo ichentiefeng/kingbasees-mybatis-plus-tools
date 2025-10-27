@@ -5,6 +5,8 @@ import lombok.Data;
 
 @Data
 public class DbapiInputParams {
+    private String dbType;
+    private String driver;
     // 数据库连接信息
     private String host;
     private int port;
@@ -13,5 +15,5 @@ public class DbapiInputParams {
     private String password;
     private String sql;       // 要执行的SQL
     // 执行参数
-    private JSONObject params;  // SQL所需参数（如{"id": 1}）
+    private JSONObject sqlParams;  // SQL所需参数（如{"id": 1}）
 }

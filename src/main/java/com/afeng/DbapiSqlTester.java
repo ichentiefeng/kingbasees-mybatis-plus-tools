@@ -6,12 +6,13 @@ import com.alibaba.fastjson.JSON;
 import com.gitee.freakchicken.dbapi.basic.util.JdbcUtil;
 import com.gitee.freakchicken.dbapi.basic.util.SqlEngineUtil;
 import com.github.freakchick.orange.SqlMeta;
-import com.kingbase8.Driver;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import javax.sql.DataSource;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Base64;
 import java.util.Map;
 
 public class DbapiSqlTester {
@@ -19,25 +20,29 @@ public class DbapiSqlTester {
         Connection connection = null;
         ExecutionResult result = new ExecutionResult();
         try {
-            // 1. 解析输入参数（JSON格式）
+            // 1. 解析输入参数（Base64编码的JSON格式）
             if (args.length == 0) {
                 result.setSuccess(false);
-                result.setMessage("请传入JSON格式的参数");
+                result.setMessage("请传入Base64编码的JSON格式参数");
                 System.out.println(JSON.toJSONString(result));
                 return;
             }
-            DbapiInputParams input = JSON.parseObject(args[0], DbapiInputParams.class);
+            
+            // Base64解码
+            String decodedArgs = new String(Base64.getDecoder().decode(args[0]), StandardCharsets.UTF_8);
+            
+            DbapiInputParams input = JSON.parseObject(decodedArgs, DbapiInputParams.class);
 
             DataSource dataSource = new DriverManagerDataSource();
-            ((DriverManagerDataSource) dataSource).setDriverClassName(Driver.class.getName());
+            ((DriverManagerDataSource) dataSource).setDriverClassName(input.getDriver());
             ((DriverManagerDataSource) dataSource).setUrl(
-                    String.format("jdbc:kingbase8://%s:%d/%s", input.getHost(), input.getPort(), input.getDb())
+                    String.format("jdbc:%s://%s:%d/%s", input.getDbType(), input.getHost(), input.getPort(), input.getDb())
             );
             ((DriverManagerDataSource) dataSource).setUsername(input.getUsername());
             ((DriverManagerDataSource) dataSource).setPassword(input.getPassword());
 
             connection = dataSource.getConnection();
-            Map<String, Object> map = input.getParams();
+            Map<String, Object> map = input.getSqlParams();
             SqlMeta sqlMeta = SqlEngineUtil.getEngine().parse(input.getSql(), map);
             Object data = JdbcUtil.executeSql(connection, sqlMeta.getSql(), sqlMeta.getJdbcParamValues());
             System.out.println(data);
